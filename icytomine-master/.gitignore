@@ -1,0 +1,9 @@
+/.settings/
+/plugins/
+/preferences/
+/target/
+/workspace/
+.project
+.classpath
+setting.xml
+/dependency-reduced-pom.xml

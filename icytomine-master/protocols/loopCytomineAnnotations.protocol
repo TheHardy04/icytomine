@@ -1,0 +1,122 @@
+<protocol VERSION="4">
+<blocks>
+<block ID="1058544198" blockType="plugins.danyfel80.cytomine.CreateCytomineClient" className="plugins.danyfel80.cytomine.CreateCytomineClient" collapsed="false" definedName="Create cytomine client" height="136" keepsResults="true" width="229" xLocation="16" yLocation="8">
+<variables>
+<input>
+<variable ID="Host URL" name="Host URL" runtime="false" value="https://bigpicture.demo.cytomine.com" visible="true"/>
+<variable ID="Public key" name="Public key" runtime="false" value="96ca4ea2-3434-44fc-98e2-ae11172f6bd5" visible="true"/>
+<variable ID="Private key" name="Private key" runtime="false" value="860f227f-98ad-489f-a672-20ad661145fd" visible="true"/>
+</input>
+<output>
+<variable ID="CytomineClient" name="CytomineClient" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<block ID="357054307" blockType="plugins.danyfel80.cytomine.GetCytomineImage" className="plugins.danyfel80.cytomine.GetCytomineImage" collapsed="false" definedName="Get cytomine image" height="108" keepsResults="true" width="215" xLocation="277" yLocation="35">
+<variables>
+<input>
+<variable ID="CytomineClient" name="CytomineClient" runtime="false" visible="true"/>
+<variable ID="Image id" name="Image id" runtime="false" value="104450" visible="true"/>
+</input>
+<output>
+<variable ID="Image" name="Image" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<block ID="1510201067" blockType="plugins.danyfel80.cytomine.annotation.GetCytomineImageUserAnnotations" className="plugins.danyfel80.cytomine.annotation.GetCytomineImageUserAnnotations" collapsed="false" definedName="Get cytomine image user annotations" height="133" keepsResults="true" width="312" xLocation="19" yLocation="156">
+<variables>
+<input>
+<variable ID="Image" name="Image" runtime="false" visible="true"/>
+<variable ID="User names" name="User names" runtime="false" value="dgonzalez_obando" visible="true"/>
+<variable ID="Term name" name="Term name" runtime="false" value="Tumor" visible="true"/>
+</input>
+<output>
+<variable ID="Annotations" name="Annotations" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<workflow ID="1893117616" blockType="plugins.danyfel80.cytomine.batch.LoopCytomineAnnotations" className="plugins.danyfel80.cytomine.batch.LoopCytomineAnnotations" collapsed="false" definedName="Loop cytomine annotations" height="418" keepsResults="true" width="870" xLocation="19" yLocation="306">
+<blocks>
+<block ID="2006944227" blockType="plugins.danyfel80.cytomine.annotation.GetCytomineAnnotationImage" className="plugins.danyfel80.cytomine.annotation.GetCytomineAnnotationImage" collapsed="false" definedName="Get cytomine annotation image" height="130" keepsResults="true" width="281" xLocation="159" yLocation="41">
+<variables>
+<input>
+<variable ID="Annotation" name="Annotation" runtime="false" visible="true"/>
+<variable ID="Resolution level" name="Resolution level" runtime="false" value="3" visible="true"/>
+<variable ID="Padding size" name="Padding size" runtime="false" value="" visible="true"/>
+</input>
+<output>
+<variable ID="Annotation sequence" name="Annotation sequence" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<block ID="1386801412" blockType="plugins.danyfel80.cytomine.annotation.GetCytomineUserAnnotationsInAnnotation" className="plugins.danyfel80.cytomine.annotation.GetCytomineUserAnnotationsInAnnotation" collapsed="false" definedName="Get cytomine user annotations in annotation" height="133" keepsResults="true" width="354" xLocation="476" yLocation="41">
+<variables>
+<input>
+<variable ID="Annotation" name="Annotation" runtime="false" visible="true"/>
+<variable ID="User names" name="User names" runtime="false" value="dgonzalez_obando" visible="true"/>
+<variable ID="Term name" name="Term name" runtime="false" value="No Term" visible="true"/>
+</input>
+<output>
+<variable ID="Annotations" name="Annotations" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<block ID="1689146036" blockType="plugins.danyfel80.cytomine.annotation.InsertCytomineAnnotationsInImage" className="plugins.danyfel80.cytomine.annotation.InsertCytomineAnnotationsInImage" collapsed="false" definedName="Insert cytomine annotations in image" height="133" keepsResults="true" width="312" xLocation="145" yLocation="201">
+<variables>
+<input>
+<variable ID="Sequence" name="Sequence" runtime="false" visible="true"/>
+<variable ID="Resolution level" name="Resolution level" runtime="false" visible="true"/>
+<variable ID="Annotations" name="Annotations" runtime="false" visible="true"/>
+</input>
+<output>
+<variable ID="Sequence" name="Sequence" runtime="false" visible="true"/>
+</output>
+</variables>
+</block>
+<block ID="942459138" blockType="plugins.adufour.blocks.tools.sequence.ShowSequence" className="plugins.adufour.blocks.tools.sequence.ShowSequence" collapsed="false" definedName="Show sequence" height="61" keepsResults="true" width="205" xLocation="511" yLocation="220">
+<variables>
+<input>
+<variable ID="sequence" name="sequence" runtime="false" visible="true"/>
+</input>
+<output/>
+</variables>
+</block>
+</blocks>
+<links>
+<link dstBlockID="2006944227" dstVarID="Annotation" srcBlockID="1893117616" srcVarID="Annotation"/>
+<link dstBlockID="1689146036" dstVarID="Sequence" srcBlockID="2006944227" srcVarID="Annotation sequence"/>
+<link dstBlockID="1689146036" dstVarID="Resolution level" srcBlockID="2006944227" srcVarID="Resolution level"/>
+<link dstBlockID="1386801412" dstVarID="Annotation" srcBlockID="2006944227" srcVarID="Annotation"/>
+<link dstBlockID="1689146036" dstVarID="Annotations" srcBlockID="1386801412" srcVarID="Annotations"/>
+<link dstBlockID="942459138" dstVarID="sequence" srcBlockID="1689146036" srcVarID="Sequence"/>
+</links>
+<variables>
+<input>
+<variable ID="Annotations" blockID="1893117616" value="" visible="true"/>
+<variable ID="2006944227:Annotation" blockID="2006944227" value="" visible="false"/>
+<variable ID="2006944227:Resolution level" blockID="2006944227" value="3" visible="false"/>
+<variable ID="2006944227:Padding size" blockID="2006944227" value="" visible="false"/>
+<variable ID="1689146036:Sequence" blockID="1689146036" value="No Sequence" visible="false"/>
+<variable ID="1689146036:Resolution level" blockID="1689146036" value="3" visible="false"/>
+<variable ID="1689146036:Annotations" blockID="1689146036" value="" visible="false"/>
+<variable ID="1386801412:Annotation" blockID="1386801412" value="" visible="false"/>
+<variable ID="1386801412:User names" blockID="1386801412" value="dgonzalez_obando" visible="false"/>
+<variable ID="1386801412:Term name" blockID="1386801412" value="No Term" visible="false"/>
+<variable ID="942459138:sequence" blockID="942459138" value="No Sequence" visible="false"/>
+</input>
+<output>
+<variable ID="iteration" blockID="1893117616" visible="true"/>
+<variable ID="Annotation" blockID="1893117616" visible="true"/>
+<variable ID="2006944227:Annotation sequence" blockID="2006944227" visible="false"/>
+<variable ID="1689146036:Sequence" blockID="1689146036" visible="false"/>
+<variable ID="1386801412:Annotations" blockID="1386801412" visible="false"/>
+</output>
+</variables>
+</workflow>
+</blocks>
+<links>
+<link dstBlockID="357054307" dstVarID="CytomineClient" srcBlockID="1058544198" srcVarID="CytomineClient"/>
+<link dstBlockID="1510201067" dstVarID="Image" srcBlockID="357054307" srcVarID="Image"/>
+<link dstBlockID="1893117616" dstVarID="Annotations" srcBlockID="1510201067" srcVarID="Annotations"/>
+</links>
+</protocol>
