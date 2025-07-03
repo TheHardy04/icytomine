@@ -731,7 +731,7 @@ public class CytomineClient implements AutoCloseable
         be.cytomine.client.models.Annotation internalAnnotation;
         try
         {
-            internalAnnotation = new be.cytomine.client.models.Annotation(geometryDescription, imageId, termIds).save();
+            internalAnnotation = new be.cytomine.client.models.Annotation().save();
         }
         catch (CytomineException e)
         {
