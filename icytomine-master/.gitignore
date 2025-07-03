@@ -3,6 +3,7 @@
 /preferences/
 /target/
 /workspace/
+/.idea/
 .project
 .classpath
 setting.xml
