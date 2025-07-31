@@ -14,11 +14,15 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import be.cytomine.client.CytomineException;
+import be.cytomine.client.collections.Collection;
+import be.cytomine.client.models.SliceInstance;
 import org.bioimageanalysis.icy.icytomine.core.connection.client.CytomineClient;
 import org.bioimageanalysis.icy.icytomine.core.connection.client.CytomineClientException;
 
 import be.cytomine.client.models.ImageInstance;
 import danyfel80.common.stream.StreamUtils;
+import org.checkerframework.checker.units.qual.C;
 
 public class Image extends Entity
 {
@@ -266,6 +270,20 @@ public class Image extends Entity
     }
 
     /**
+     * Retrieves the list of slice instances associated with this image.
+     *
+     * @return A collection of SliceInstance objects.
+     * @throws CytomineClientException if the slice instances cannot be retrieved.
+     */
+    public Collection<SliceInstance> getSliceInstances() throws CytomineClientException {
+        try {
+            return Collection.fetchWithFilter(SliceInstance.class, ImageInstance.class, getId());
+        } catch (CytomineException e) {
+            throw new CytomineClientException("Error retrieving slice instances for image ID: " + getId(), e);
+        }
+    }
+
+    /**
      * Retrieves the URL used to retrieve a given tile at a given resolution.
      * 
      * @param resolution
@@ -282,15 +300,28 @@ public class Image extends Entity
      */
     public Optional<String> getTileUrl(long resolution, int tileIndex, int x, int y) throws CytomineClientException
     {
-        List<String> servers = getImageServers(false);
-        if (servers.isEmpty())
-        {
-            return Optional.ofNullable(null);
-        }
+//        List<String> servers = getImageServers(false);
+//        if (servers.isEmpty())
+//        {
+//            return Optional.ofNullable(null);
+//        }
         // return Optional.of(String.format("%s&tileIndex=%d&z=%d&mimeType=%s", servers.get(0), tileIndex,
         // getDepth().orElse(0L) - resolution, getMimeType().orElse("ndpi")));
-        return Optional.of(String.format("%s&x=%d&y=%d&z=%d&mimeType=%s", servers.get(0), x, y,
-                getDepth().orElse(0L) - resolution, getMimeType().orElse("ndpi")));
+
+        if (getSliceInstances().isEmpty()) {
+            return Optional.ofNullable(null);
+        }
+        Long sliceInstanceId = getSliceInstances().get(0).getId();
+
+
+
+        return Optional.of(String.format("%sapi/sliceinstance/%d/normalized-tile/zoom/%d/tx/%d/ty/%d.%s",
+                getClient().getHost(), sliceInstanceId, getDepth().orElse(0L) - resolution,
+                x, y, getMimeType().orElse("ndpi")));
+
+
+//        return Optional.of(String.format("%s&x=%d&y=%d&z=%d&mimeType=%s", servers.get(0), x, y,
+//                getDepth().orElse(0L) - resolution, getMimeType().orElse("ndpi")));
     }
 
     /**
@@ -298,8 +329,9 @@ public class Image extends Entity
      *        If true, the list is requested to the server. Otherwise, the cached list is used if it is not null.
      * @return Collection with image servers available for this image.
      * @throws CytomineClientException
-     *         If the image servers cannot be retrieved from the server.
+     *         If the image servers be retrieved from the server.
      */
+    @Deprecated
     public List<String> getImageServers(boolean recompute) throws CytomineClientException
     {
         if (imageServers == null || recompute)

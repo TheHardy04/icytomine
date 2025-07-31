@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import be.cytomine.client.models.*;
 import org.bioimageanalysis.icy.icytomine.core.connection.client.collection.ImageServers;
 import org.bioimageanalysis.icy.icytomine.core.model.AbstractAnnotation;
 import org.bioimageanalysis.icy.icytomine.core.model.AlgorithmAnnotation;
@@ -64,8 +65,6 @@ import be.cytomine.client.CytomineException;
 import be.cytomine.client.collections.AnnotationCollection;
 import be.cytomine.client.collections.Collection;
 import be.cytomine.client.collections.PropertyCollection;
-import be.cytomine.client.models.AbstractImage;
-import be.cytomine.client.models.AnnotationTerm;
 import danyfel80.common.stream.StreamUtils;
 
 /**
@@ -253,10 +252,10 @@ public class CytomineClient implements AutoCloseable
      */
     public List<Project> getUserProjects(long userId) throws CytomineClientException
     {
-        be.cytomine.client.collections.Collection<be.cytomine.client.models.Project> projectCollection;
+        Collection<be.cytomine.client.models.Project> projectCollection;
         try
         {
-            projectCollection = be.cytomine.client.collections.Collection.fetchWithFilter(
+            projectCollection = Collection.fetchWithFilter(
                     be.cytomine.client.models.Project.class, be.cytomine.client.models.User.class, userId, 0, 0);
 
             // projectCollection = getInternalClient().getProjectsByUser(userId);
@@ -392,10 +391,10 @@ public class CytomineClient implements AutoCloseable
      */
     public List<User> getProjectUsers(long projectId) throws CytomineClientException
     {
-        be.cytomine.client.collections.Collection<be.cytomine.client.models.User> userCollection;
+        Collection<be.cytomine.client.models.User> userCollection;
         try
         {
-            userCollection = be.cytomine.client.collections.Collection.fetchWithFilter(
+            userCollection = Collection.fetchWithFilter(
                     be.cytomine.client.models.User.class, be.cytomine.client.models.Project.class, projectId, 0, 0);
         }
         catch (CytomineException e)
@@ -478,10 +477,10 @@ public class CytomineClient implements AutoCloseable
      */
     public Set<Term> getOntologyTerms(long ontologyId) throws CytomineClientException
     {
-        be.cytomine.client.collections.Collection<be.cytomine.client.models.Term> termCollection;
+        Collection<be.cytomine.client.models.Term> termCollection;
         try
         {
-            termCollection = be.cytomine.client.collections.Collection.fetchWithFilter(
+            termCollection = Collection.fetchWithFilter(
                     be.cytomine.client.models.Term.class, be.cytomine.client.models.Ontology.class, ontologyId, 0, 0);
         }
         catch (CytomineException e)
@@ -563,11 +562,11 @@ public class CytomineClient implements AutoCloseable
      */
     public List<Image> getProjectImages(long projectId) throws CytomineClientException
     {
-        be.cytomine.client.collections.Collection<be.cytomine.client.models.ImageInstance> imageInstanceCollection;
+        Collection<ImageInstance> imageInstanceCollection;
         try
         {
-            imageInstanceCollection = be.cytomine.client.collections.Collection.fetchWithFilter(
-                    be.cytomine.client.models.ImageInstance.class, be.cytomine.client.models.Project.class, projectId,
+            imageInstanceCollection = Collection.fetchWithFilter(
+                    ImageInstance.class, be.cytomine.client.models.Project.class, projectId,
                     0, 0);
         }
         catch (CytomineException e)
@@ -579,8 +578,8 @@ public class CytomineClient implements AutoCloseable
         List<Image> images = new ArrayList<>(imageInstanceCollection.size());
         for (int i = 0; i < imageInstanceCollection.size(); i++)
         {
-            be.cytomine.client.models.ImageInstance inImage = imageInstanceCollection.get(i);
-            be.cytomine.client.models.ImageInstance newInImage = new be.cytomine.client.models.ImageInstance();
+            ImageInstance inImage = imageInstanceCollection.get(i);
+            ImageInstance newInImage = new ImageInstance();
             newInImage.setAttr(inImage.getAttr());
 
             Image image = new Image(this, newInImage);
@@ -624,10 +623,10 @@ public class CytomineClient implements AutoCloseable
 
     private Image downloadImage(long imageInstanceId) throws CytomineClientException
     {
-        be.cytomine.client.models.ImageInstance imageInstance;
+        ImageInstance imageInstance;
         try
         {
-            imageInstance = new be.cytomine.client.models.ImageInstance().fetch(imageInstanceId);
+            imageInstance = new ImageInstance().fetch(imageInstanceId);
         }
         catch (CytomineException e)
         {
@@ -676,17 +675,39 @@ public class CytomineClient implements AutoCloseable
         // String.format("Could not download image servers (image=%s)", image.toString()), e);
         // }
 
+//        JSONArray serverJSONArray = null;
+//
+//        try
+//        {
+//            AbstractImage abstractImage = new AbstractImage();
+//            abstractImage.set("id", image.getInternalImage().get("baseImage"));
+//            Collection<ImageServers> servers = new Collection<>(ImageServers.class, 0, 0);
+//            servers.addFilter("abstractimage", "" + abstractImage.getId());
+//            JSONObject answer = Cytomine.getInstance().getDefaultCytomineConnection().doGet(servers.toURL());
+//            serverJSONArray = (JSONArray) answer.getOrDefault("imageServersURLs", new JSONArray());
+//            // servers = getInternalClient().getImageInstanceServers(image.getInternalImage());
+//        }
+//        catch (CytomineException e)
+//        {
+//            throw new CytomineClientException(
+//                  String.format("Could not download image servers (image=%s)", image.toString()), e);
+//            //  System.out.println("Could not download image servers (image=" + image.toString() + "): " + e.getMessage());
+//        }
+//
+//        List<String> serverList = ((ArrayList<Object>) serverJSONArray).stream().map(s -> {
+//            return s.toString().replace(" ", "%20");
+//        }).collect(Collectors.toList());
+//
+//        return serverList;
+
         JSONArray serverJSONArray;
 
         try
         {
-            AbstractImage abstractImage = new AbstractImage();
-            abstractImage.set("id", image.getInternalImage().get("baseImage"));
-            Collection<ImageServers> servers = new Collection<>(ImageServers.class, 0, 0);
-            servers.addFilter("abstractimage", "" + abstractImage.getId());
-            JSONObject answer = Cytomine.getInstance().getDefaultCytomineConnection().doGet(servers.toURL());
-            serverJSONArray = (JSONArray) answer.getOrDefault("imageServersURLs", new JSONArray());
-            // servers = getInternalClient().getImageInstanceServers(image.getInternalImage());
+            // Fetch the abstract image directly
+            AbstractImage abstractImage = new AbstractImage().fetch(image.getAbstractImageId().get());
+            // Get the image server URLs from the abstract image's attributes
+            serverJSONArray = (JSONArray) abstractImage.getAttr().getOrDefault("imageServersURLs", new JSONArray());
         }
         catch (CytomineException e)
         {
@@ -699,6 +720,21 @@ public class CytomineClient implements AutoCloseable
         }).collect(Collectors.toList());
 
         return serverList;
+    }
+
+    /**
+     * Retrieves a specific slice instance by its ID.
+     *
+     * @param sliceInstanceId The ID of the slice instance.
+     * @return The SliceInstance object.
+     * @throws CytomineClientException if the request fails.
+     */
+    public SliceInstance getSliceInstance(long sliceInstanceId) throws CytomineClientException {
+        try {
+            return new SliceInstance().fetch(sliceInstanceId);
+        } catch (CytomineException e) {
+            throw new CytomineClientException("Failed to retrieve slice instance " + sliceInstanceId, e);
+        }
     }
 
     /**
@@ -728,10 +764,10 @@ public class CytomineClient implements AutoCloseable
 
     public UserAnnotation addUserAnnotationWithTerms(Long imageId, String geometryDescription, List<Long> termIds)
     {
-        be.cytomine.client.models.Annotation internalAnnotation;
+        Annotation internalAnnotation;
         try
         {
-            internalAnnotation = new be.cytomine.client.models.Annotation().save();
+            internalAnnotation = new Annotation().save();
         }
         catch (CytomineException e)
         {
@@ -953,10 +989,10 @@ public class CytomineClient implements AutoCloseable
 
     public AbstractAnnotation downloadAbstractAnnotation(long annotationId)
     {
-        be.cytomine.client.models.Annotation annotation;
+        Annotation annotation;
         try
         {
-            annotation = new be.cytomine.client.models.Annotation().fetch(annotationId);
+            annotation = new Annotation().fetch(annotationId);
         }
         catch (CytomineException e)
         {
@@ -1664,7 +1700,7 @@ public class CytomineClient implements AutoCloseable
     {
         try
         {
-            new be.cytomine.client.models.Annotation().delete(annotationId);
+            new Annotation().delete(annotationId);
             // getAnnotationCache().remove(annotationId);
             getAbstractAnnotationCache().remove(annotationId);
         }
@@ -1698,8 +1734,8 @@ public class CytomineClient implements AutoCloseable
             try
             {
                 termUsersArray =
-                        be.cytomine.client.collections.Collection.fetchWithFilter(be.cytomine.client.models.Term.class,
-                                be.cytomine.client.models.Annotation.class, annotation.getId(), 0, 0).getList();
+                        Collection.fetchWithFilter(be.cytomine.client.models.Term.class,
+                                Annotation.class, annotation.getId(), 0, 0).getList();
             }
             catch (CytomineException e)
             {
@@ -1777,8 +1813,11 @@ public class CytomineClient implements AutoCloseable
         }
         catch (CytomineException e)
         {
-            throw new CytomineClientException(
-                    String.format("Could not retrieve user jobs in project %d", project.getId()), e);
+            // TEST
+//            throw new CytomineClientException(
+//                    String.format("Could not retrieve user jobs in project %d", project.getId()), e);
+            System.out.printf("Could not retrieve user jobs in project %d: %s%n", project.getId(), e.getMessage());
+            ;
         }
 
         List<UserJob> foundUserJobs = new ArrayList<>(userJobCollection.size());
