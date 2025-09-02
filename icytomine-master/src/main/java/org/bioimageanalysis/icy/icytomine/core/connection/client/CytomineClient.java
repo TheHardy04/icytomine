@@ -20,6 +20,7 @@ package org.bioimageanalysis.icy.icytomine.core.connection.client;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,7 +66,18 @@ import be.cytomine.client.CytomineException;
 import be.cytomine.client.collections.AnnotationCollection;
 import be.cytomine.client.collections.Collection;
 import be.cytomine.client.collections.PropertyCollection;
+
+//import java.awt.image.BufferedImage;
+//import java.io.InputStream;
+//import java.net.URI;
+//import java.net.http.HttpClient;
+//import java.net.http.HttpRequest;
+//import java.net.http.HttpResponse;
+//import javax.imageio.ImageIO;
+
 import danyfel80.common.stream.StreamUtils;
+
+
 
 /**
  * This class represents the connection point between local and remote cytomine
@@ -738,6 +750,17 @@ public class CytomineClient implements AutoCloseable
     }
 
     /**
+     * Retrieve short-term authentication token.
+     * @return the short-term token.
+     * @throws CytomineException if the request fails.
+     */
+    public static String getShortTermToken() throws CytomineException {
+        JSONObject json = Cytomine.getInstance().getDefaultCytomineConnection().doGet("/server/ping.json");
+        Object token = json.get("shortTermToken");
+        return token != null ? token.toString() : null;
+    }
+
+    /**
      * @param imageInstanceId
      *        The image instance id.
      * @return The {@link BufferedImage} preview downloaded.
@@ -749,8 +772,23 @@ public class CytomineClient implements AutoCloseable
         try
         {
             // String url = getHost() + "/api/imageinstance/" + imageInstanceId + "/thumb.png";
-            String url = getHost() + "/api/abstractimage/" + imageInstanceId + "/thumb.png?maxSize=256";
-            return getInternalClient().getDefaultCytomineConnection().getPictureAsBufferedImage(url, "png");
+            // Token generation
+            String token = null;
+            try
+            {
+                String username = getInternalClient().getCurrentUser().get("username").toString();
+                System.out.println("Generating token for user: " + username);
+                token = getShortTermToken();
+            }
+            catch (CytomineException e)
+            {
+                System.err.println("Failed to retrieve bearer token: " + e.getMessage());
+            }
+            String url = getHost() + "api/abstractimage/" + imageInstanceId + "/thumb.webp?maxSize=256";
+            if (token != null) {
+                url += "&Authorization=Bearer%20" + token;
+            }
+            return getInternalClient().getDefaultCytomineConnection().getPictureAsBufferedImage(url, "webp");
 
             // return getInternalClient().getAbstractImageThumb(abstractImageId, maxSize);
         }
@@ -1643,9 +1681,10 @@ public class CytomineClient implements AutoCloseable
 
     public BufferedImage downloadPictureAsBufferedImage(String url, String format) throws CytomineClientException
     {
+
         try
         {
-            return getInternalClient().getDefaultCytomineConnection().getPictureAsBufferedImage(url, format);
+            return getInternalClient().getDefaultCytomineConnection().getPictureAsBufferedImage(url+ "?Authorization=Bearer%20" + getShortTermToken(), format);
         }
         catch (CytomineException e)
         {
