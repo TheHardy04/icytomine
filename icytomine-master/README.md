@@ -1,5 +1,10 @@
 # Icytomine v1.0.4 - Integrating Cytomine into ICY
 
+>[!Warning]  
+> 
+>Originally created by Daniel Felipe González Obando, this plugin has been updated by Théo Hardy to support the latest versions of Cytomine ([Community Edition](https://github.com/cytomine/Cytomine-community-edition)) and Icy ([2.5.4.0](https://icy.bioimageanalysis.org)).The goal is to enable a seamless integration of Cytomine within Icy. Status (August 2025): under development.
+
+
 Icytomine is a set of plugin that allows _Cytomine_ users to interact with their account directly from _ICY_. Users can access Cytomine from Icy using the Graphical Interface or from a command line. In the following sections plugins in Icytomine are described. Also, instructions on how to configure the development environment are included.
 
 ## Table of Contents
