@@ -7,10 +7,6 @@
 
 Icytomine is a set of plugin that allows _Cytomine_ users to interact with their account directly from _ICY_. Users can access Cytomine from Icy using the Graphical Interface or from a command line. In the following sections plugins in Icytomine are described. Also, instructions on how to configure the development environment are included.
 
-## Table of Contents
-
-[TOC]
-
 ### 1. Introduction
 
 Icytomine tries to integrate two technologies, one handling large images and the other performing image analysis.
